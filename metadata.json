@@ -1,0 +1,6 @@
+{
+  "name": "SPIN FOR A REWARD! - Classroom Reward Wheel",
+  "description": "A cheerful, pastel classroom reward wheel for teaching demonstrations with customizable prizes, sound effects, confetti, spin history, and password-protected teacher admin.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

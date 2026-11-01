@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SPIN FOR A REWARD! - Classroom Reward Wheel</title>
+    <meta name="description" content="A cute, colorful, and interactive classroom reward wheel for teaching demonstrations, featuring customizable prizes, audio, confetti, student spin history, and password-protected teacher controls." />
+    <meta property="og:title" content="SPIN FOR A REWARD! - Classroom Reward Wheel" />
+    <meta property="og:description" content="A cute, colorful, and interactive classroom reward wheel for teaching demonstrations, featuring customizable prizes, audio, confetti, student spin history, and password-protected teacher controls." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Google Fonts: Fredoka & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- App Stylesheet (Vanilla CSS, zero dependencies) -->
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <!-- Full-screen Confetti Layer -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Presentation Mode Floating Control Bar -->
+    <div class="presentation-bar">
+      <button class="btn btn-icon-label" id="exit-presentation-btn" title="Exit Presentation Mode">
+        <span>Exit Fullscreen</span> ✕
+      </button>
+    </div>
+
+    <div class="app-wrapper">
+      <!-- Top Navigation Bar -->
+      <header class="top-nav">
+        <div class="brand-badge">
+          <span class="brand-icon">🎡</span>
+          <span class="brand-title">SPIN FOR A REWARD!</span>
+          <span class="brand-tag">Classroom Edition</span>
+        </div>
+
+        <div class="nav-actions">
+          <button class="btn btn-icon-label" id="sound-toggle-btn" title="Toggle Sound Effects">
+            🔊 Sound
+          </button>
+          <button class="btn btn-icon-label" id="presentation-btn" title="Full-screen Presentation Mode">
+            📺 <span>Present</span>
+          </button>
+          <button class="btn btn-icon-label" id="teacher-mode-btn" title="Open Teacher Admin Panel">
+            🔒 <span>Teacher Mode</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Classroom Interactive Stage -->
+      <main class="stage-container">
+        <!-- Headline -->
+        <header class="hero-header">
+          <h1 class="main-title" id="main-app-title">
+            <span class="sparkle-decor">✨</span> SPIN FOR A REWARD! <span class="sparkle-decor">✨</span>
+          </h1>
+          <p class="main-subtitle" id="main-app-subtitle">
+            You did a great job! Let's see your reward!
+          </p>
+        </header>
+
+        <div class="game-stage">
+          <!-- Student Name Deck -->
+          <div class="student-bar-card">
+            <div class="student-input-row">
+              <div class="student-input-wrapper">
+                <span class="input-icon">🎓</span>
+                <input
+                  type="text"
+                  id="student-name-input"
+                  class="student-input"
+                  placeholder="Enter student's name..."
+                  autocomplete="off"
+                  autofocus
+                />
+              </div>
+            </div>
+
+            <!-- Quick Class Roster Chips -->
+            <div class="quick-roster-row" id="quick-roster-container">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Central Prize Wheel -->
+          <div class="wheel-wrapper">
+            <!-- Decorative Outer Ring with Light Bulbs -->
+            <div class="wheel-outer-ring">
+              <!-- Canvas Wheel -->
+              <canvas id="wheel-canvas"></canvas>
+
+              <!-- Golden Pointer Pin at 12 o'clock -->
+              <div class="wheel-pointer">
+                <svg viewBox="0 0 44 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Pointer needle shadow & body -->
+                  <path d="M22 54L8 16C6.5 12 9.5 8 14 8H30C34.5 8 37.5 12 36 16L22 54Z" fill="#F59E0B" stroke="#B45309" stroke-width="2" />
+                  <path d="M22 50L11 16H33L22 50Z" fill="#FDE047" />
+                  <!-- Pivot circle -->
+                  <circle cx="22" cy="14" r="10" fill="#F59E0B" stroke="#B45309" stroke-width="2" />
+                  <circle cx="22" cy="14" r="6" fill="#FFF" />
+                </svg>
+              </div>
+
+              <!-- Center Hub Spin Button -->
+              <div class="wheel-center-hub" title="Click to Spin the Wheel!">
+                <span class="hub-star">⭐</span>
+                <span class="hub-text">SPIN</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Big SPIN NOW Button -->
+          <div class="spin-action-area">
+            <button class="btn btn-spin-main" id="spin-now-btn">
+              SPIN NOW! 🎯
+            </button>
+            <span class="spin-hint">Press Enter or click SPIN to start!</span>
+          </div>
+        </div>
+      </main>
+
+      <!-- App Footer -->
+      <footer class="app-footer">
+        <span>Made for classroom teaching demonstrations · Rewarding student achievement with joy!</span>
+      </footer>
+    </div>
+
+    <!-- WINNER CELEBRATION MODAL -->
+    <div class="modal-overlay" id="winner-modal">
+      <div class="modal-card winner-card">
+        <div class="winner-banner-badge">
+          <span>🎉</span> CONGRATULATIONS! <span>🎉</span>
+        </div>
+        <h2 class="winner-student-name" id="winner-student-name">Student Name</h2>
+        <p class="winner-congrats-sub">You did an amazing job in class today!</p>
+
+        <div class="winner-prize-showcase">
+          <div class="winner-image-frame" id="winner-image-frame">
+            <span class="prize-emoji-big">🎁</span>
+          </div>
+          <div class="winner-prize-title" id="winner-prize-title">Reward Name</div>
+          <span class="winner-stock-tag" id="winner-stock-tag" style="display: none;">In Stock</span>
+        </div>
+
+        <div class="winner-actions">
+          <button class="btn btn-play-again" id="winner-play-again-btn">
+            PLAY AGAIN / NEXT STUDENT ➜
+          </button>
+          <button class="btn btn-icon-label" id="close-winner-modal-btn" style="margin-top: 6px;">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEACHER PASSWORD AUTH MODAL -->
+    <div class="modal-overlay" id="password-modal">
+      <div class="modal-card" style="max-width: 440px; text-align: center;">
+        <div style="font-size: 3rem; margin-bottom: 8px;">🔒</div>
+        <h3 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 6px; color: var(--purple-700);">
+          Teacher Mode Access
+        </h3>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px;">
+          Enter your owner password to manage prizes, probabilities, stock limits, and classroom settings.
+        </p>
+
+        <div class="form-group" style="text-align: left;">
+          <input
+            type="password"
+            id="teacher-pwd-input"
+            class="form-control"
+            placeholder="Enter password..."
+            style="font-size: 1.1rem; text-align: center; letter-spacing: 2px;"
+          />
+          <div id="pwd-error-msg" style="color: #DC2626; font-size: 0.85rem; margin-top: 6px; text-align: center; font-weight: 600;"></div>
+          <div style="font-size: 0.8rem; color: #64748B; margin-top: 8px; text-align: center;">
+            Initial default password: <code style="background: var(--purple-100); padding: 2px 6px; border-radius: 4px; font-weight: 700;">teacher123</code>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+          <button class="btn btn-icon-label" id="cancel-pwd-btn" style="flex: 1;">
+            Cancel
+          </button>
+          <button class="btn" id="submit-pwd-btn" style="flex: 1; background: var(--purple-600); color: #FFF; padding: 10px 18px;">
+            Unlock Panel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEACHER ADMIN PANEL MODAL -->
+    <div class="modal-overlay" id="admin-modal">
+      <div class="modal-card admin-card">
+        <!-- Header -->
+        <div class="admin-header">
+          <div class="admin-title-wrap">
+            <span>⚙️</span>
+            <h2>Teacher & Owner Control Panel</h2>
+          </div>
+          <button class="admin-close-btn" id="close-admin-btn" title="Close Admin Panel">✕</button>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="admin-tabs">
+          <button class="admin-tab active" data-tab="tab-prizes">🎁 Prizes & Rewards</button>
+          <button class="admin-tab" data-tab="tab-settings">🎛️ Wheel & Classroom</button>
+          <button class="admin-tab" data-tab="tab-history">📋 Student Spin History</button>
+          <button class="admin-tab" data-tab="tab-info">ℹ️ Storage & Security</button>
+        </div>
+
+        <!-- Tab Contents -->
+        <div class="admin-body">
+          <!-- TAB 1: PRIZES -->
+          <div class="tab-pane active" id="tab-prizes">
+            <div class="admin-section-header">
+              <div>
+                <h3 class="admin-section-title">Current Rewards on the Wheel</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">
+                  Add, edit, change colors, set winning weights, or upload pictures.
+                </p>
+              </div>
+              <button class="btn" id="add-prize-btn" style="background: var(--purple-600); color: #FFF; padding: 8px 16px; font-size: 0.85rem;">
+                + Add New Reward
+              </button>
+            </div>
+
+            <div class="prizes-table-wrapper">
+              <table class="prizes-table">
+                <thead>
+                  <tr>
+                    <th>Icon/Pic</th>
+                    <th>Reward Name</th>
+                    <th>Color</th>
+                    <th>Weight (Prob)</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="prizes-table-body">
+                  <!-- Rendered via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- TAB 2: WHEEL & CLASSROOM SETTINGS -->
+          <div class="tab-pane" id="tab-settings">
+            <h3 class="admin-section-title" style="margin-bottom: 14px;">Classroom Display Settings</h3>
+
+            <div class="form-group">
+              <label class="form-label" for="setting-title-input">
+                Website Title <span class="form-label-desc">(Shown at top of screen)</span>
+              </label>
+              <input type="text" id="setting-title-input" class="form-control" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="setting-subtitle-input">
+                Website Subtitle <span class="form-label-desc">(Encouraging message for students)</span>
+              </label>
+              <input type="text" id="setting-subtitle-input" class="form-control" />
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                  <input type="checkbox" id="setting-stock-toggle" style="width: 18px; height: 18px;" />
+                  <span>Enable Stock Limits</span>
+                </label>
+                <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">
+                  When enabled, rewards with 0 stock will never be landed on.
+                </p>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                  <input type="checkbox" id="setting-sound-toggle" style="width: 18px; height: 18px;" />
+                  <span>Enable Cheerful Sound Effects</span>
+                </label>
+                <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">
+                  Plays wheel ticks, start sweeps, and winning celebration fanfare.
+                </p>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="setting-duration-input">
+                  Spin Animation Duration (Seconds)
+                </label>
+                <input type="number" id="setting-duration-input" class="form-control" min="3" max="12" step="1" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="setting-pwd-input">
+                  Teacher Admin Password
+                </label>
+                <input type="text" id="setting-pwd-input" class="form-control" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="setting-roster-input">
+                Classroom Student Roster <span class="form-label-desc">(Comma separated for quick chips)</span>
+              </label>
+              <textarea id="setting-roster-input" class="form-control" rows="2" placeholder="Alex, Bella, Carlo, Diana..."></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-light);">
+              <button class="btn btn-icon-label" id="reset-defaults-btn" style="color: #DC2626; border-color: #FECACA;">
+                ↺ Reset to Factory Defaults
+              </button>
+              <button class="btn" id="save-settings-btn" style="background: var(--purple-600); color: #FFF; padding: 10px 24px;">
+                Save Classroom Settings
+              </button>
+            </div>
+          </div>
+
+          <!-- TAB 3: HISTORY -->
+          <div class="tab-pane" id="tab-history">
+            <div class="admin-section-header">
+              <div>
+                <h3 class="admin-section-title">Student Rewards History</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">
+                  Log of every student and the prize they received during this demo.
+                </p>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-icon-label" id="export-history-btn">
+                  📥 Export CSV
+                </button>
+                <button class="btn btn-icon-label" id="clear-history-btn" style="color: #DC2626;">
+                  🗑️ Clear Log
+                </button>
+              </div>
+            </div>
+
+            <div class="prizes-table-wrapper">
+              <table class="prizes-table">
+                <thead>
+                  <tr>
+                    <th>Student Name</th>
+                    <th>Reward Received</th>
+                    <th>Date & Time</th>
+                  </tr>
+                </thead>
+                <tbody id="history-table-body">
+                  <!-- Rendered via JS -->
+                </tbody>
+              </table>
+              <div id="history-empty-msg" style="display: none; padding: 24px; text-align: center; color: var(--text-muted);">
+                No spins recorded yet. Have a student spin the wheel!
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 4: STORAGE & PRIVACY NOTICE -->
+          <div class="tab-pane" id="tab-info">
+            <h3 class="admin-section-title" style="margin-bottom: 12px;">Data Storage & Security Disclosure</h3>
+
+            <div class="notice-box">
+              <p style="margin-bottom: 8px;">
+                <strong>📍 Local Device Storage:</strong>
+                All prize configurations, custom photos, stock counts, classroom settings, and student spin history are stored exclusively in this browser's <code>localStorage</code>.
+              </p>
+              <p style="margin-bottom: 8px;">
+                This means your data remains strictly on this computer and browser. If you switch to another device or clear your browser data, the wheel will return to default settings.
+              </p>
+              <p>
+                <strong>⚠️ Client-Side Security Advisory:</strong>
+                The teacher password check is implemented entirely in client-side JavaScript to keep the site 100% serverless and ready for GitHub Pages hosting. While it effectively prevents regular students from seeing editing controls in class, students with knowledge of browser Developer Tools (F12) can inspect the JavaScript code and localStorage.
+              </p>
+            </div>
+
+            <div style="background: var(--purple-50); border: 1.5px solid var(--purple-200); border-radius: var(--radius-md); padding: 16px;">
+              <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--purple-800); margin-bottom: 6px;">
+                Teaching Demonstration Quick Tips:
+              </h4>
+              <ul style="padding-left: 20px; font-size: 0.85rem; color: var(--text-body); line-height: 1.6;">
+                <li>Click <strong>📺 Present</strong> in the top menu to enter distraction-free full-screen mode before inviting students to the front.</li>
+                <li>You can type the student's name or click their name from the quick roster chips.</li>
+                <li>Press <kbd style="background: #FFF; padding: 1px 4px; border: 1px solid #CCC; border-radius: 3px;">Enter</kbd> to spin instantly.</li>
+                <li>After each celebration, click <strong>Play Again / Next Student</strong> to immediately prepare the stage for the next learner.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD / EDIT PRIZE MODAL -->
+    <div class="modal-overlay" id="prize-form-modal">
+      <div class="modal-card" style="max-width: 500px;">
+        <h3 id="prize-form-modal-title" style="font-family: var(--font-display); font-size: 1.35rem; color: var(--purple-700); margin-bottom: 16px;">
+          Add Reward
+        </h3>
+
+        <div class="form-group">
+          <label class="form-label" for="prize-name-input">Reward Name</label>
+          <input type="text" id="prize-name-input" class="form-control" placeholder="e.g. Extra Point, Fudgee Barr..." />
+        </div>
+
+        <!-- Icon / Picture Selector -->
+        <div class="form-group">
+          <label class="form-label">Reward Icon / Picture</label>
+          <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 10px;">
+            <div id="prize-image-preview" style="position: relative; width: 56px; height: 56px; border-radius: 10px; background: var(--purple-100); display: flex; align-items: center; justify-content: center; border: 2px solid var(--purple-300); flex-shrink: 0;">
+              <span style="font-size: 2rem;">🍫</span>
+            </div>
+            <div>
+              <label class="btn btn-icon-label" style="cursor: pointer; display: inline-flex;">
+                📷 Upload Picture
+                <input type="file" id="prize-image-file" accept="image/*" style="display: none;" />
+              </label>
+              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px;">
+                Upload a photo (auto-optimized) or choose an icon below.
+              </div>
+            </div>
+          </div>
+
+          <label class="form-label" style="font-size: 0.78rem;">Or pick a cute preset icon:</label>
+          <div class="icon-preset-grid" id="preset-icons-container">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+
+        <!-- Slice Color -->
+        <div class="form-group">
+          <label class="form-label">Wheel Slice Pastel Color</label>
+          <div class="color-preset-row" id="preset-colors-container">
+            <!-- Rendered via JS -->
+          </div>
+          <div style="margin-top: 8px; display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Custom Hex:</span>
+            <input type="text" id="prize-color-hex" class="form-control" style="width: 110px; padding: 4px 8px; font-size: 0.85rem;" />
+          </div>
+        </div>
+
+        <!-- Weight & Stock -->
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label" for="prize-weight-input">
+              Probability Weight <span class="form-label-desc">(1 to 20)</span>
+            </label>
+            <input type="number" id="prize-weight-input" class="form-control" min="1" max="50" step="1" value="5" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="prize-stock-input">
+              Available Stock <span class="form-label-desc">(Quantity)</span>
+            </label>
+            <input type="number" id="prize-stock-input" class="form-control" min="0" max="999" step="1" value="10" />
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+          <button type="button" class="btn btn-icon-label" id="cancel-prize-form-btn">
+            Cancel
+          </button>
+          <button type="button" class="btn" id="save-prize-form-btn" style="background: var(--purple-600); color: #FFF; padding: 10px 20px;">
+            Save Reward
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Host -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Application Script (Vanilla JS) -->
+    <script src="./script.js"></script>
+  </body>
+</html>
